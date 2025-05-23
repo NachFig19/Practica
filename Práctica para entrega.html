@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pedidos - La Guadalupana</title>
+
+  <!-- Tipografía -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Merriweather&display=swap" rel="stylesheet">
+  <!-- Iconos -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    :root {
+      --rojo-oscuro: #8B0000;
+      --crema: #f5f1e8;
+      --marron: #5c3a21;
+      --gris-claro: #f0f0f0;
+      --borde: #ddd;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Merriweather', serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--crema);
+      color: var(--marron);
+    }
+
+    header {
+      background-color: var(--rojo-oscuro);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    header img {
+      height: 80px;
+      position: absolute;
+      top: 10px;
+      left: 20px;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      margin: 0;
+    }
+
+    main {
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .seccion {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid var(--borde);
+      border-radius: 5px;
+    }
+
+    .productos {
+      margin-top: 10px;
+    }
+
+    .producto {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .producto select, .producto input {
+      flex: 1;
+    }
+
+    .botones-producto {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    button {
+      background-color: var(--rojo-oscuro);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #a30000;
+    }
+
+    .modal, .exito {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-contenido, .exito-mensaje {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 500px;
+      width: 90%;
+    }
+
+    .complementarios {
+      display: none;
+    }
+
+    .contacto-final {
+      margin-top: 20px;
+      background-color: var(--gris-claro);
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    @media (max-width: 600px) {
+      .producto {
+        flex-direction: column;
+      }
+
+      header img {
+        position: static;
+        margin-bottom: 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <img src="https://github.com/NachFig19/Practica/blob/7f346f5394976bd08edd3633bff36d5478df6f88/Imagen%20Pr%C3%A1ctica.png?raw=true" alt="Logo La Guadalupana" />
+    <h1>La Guadalupana</h1>
+    <p>Pedidos de Productos Cárnicos</p>
+  </header>
+
+  <main>
+    <form id="pedidoForm">
+      <div class="seccion">
+        <h2>Medio de Entrega</h2>
+        <label><input type="radio" name="entrega" value="mostrador" checked> En Mostrador (Recoger en tienda)</label>
+        <label><input type="radio" name="entrega" value="domicilio"> A Domicilio</label>
+
+        <div id="domicilioCampos" style="display: none;">
+          <label>Domicilio Completo: <input type="text" id="domicilio" required></label>
+          <label>Referencias: <input type="text" id="referencias" required></label>
+        </div>
+
+        <div id="nombreMostrador">
+          <label>Nombre para Recoger: <input type="text" id="nombre"></label>
+        </div>
+
+        <label>Teléfono (10 dígitos): <input type="tel" id="telefono" maxlength="10" pattern="\d{10}" required></label>
+      </div>
+
+      <div class="seccion">
+        <h2>Detalles del Pedido</h2>
+        <div class="productos" id="productos">
+          <!-- Productos dinámicos se añadirán aquí -->
+        </div>
+
+        <div class="botones-producto">
+          <button type="button" onclick="agregarProducto()"><i class="fas fa-plus"></i> Agregar Otro Producto</button>
+        </div>
+      </div>
+
+      <label>Comentarios Adicionales:</label>
+      <textarea id="comentarios" rows="4"></textarea>
+
+      <button type="submit">Realizar Pedido</button>
+    </form>
+
+    <!-- Modal de confirmación -->
+    <div class="modal" id="modalConfirmacion">
+      <div class="modal-contenido" id="resumenPedido">
+        <!-- Aquí se colocará el resumen del pedido -->
+      </div>
+    </div>
+
+    <!-- Sección de productos complementarios -->
+    <div class="complementarios" id="complementarios">
+      <h2>¿Desea agregar alguno de estos productos?</h2>
+      <label><input type="checkbox" value="Salsa de chipotle"> Salsa de chipotle</label>
+      <label><input type="checkbox" value="100 grs de chicharrón (cáscara o con carne)"> 100 grs de chicharrón</label>
+      <label><input type="checkbox" value="100 grs de tocino"> 100 grs de tocino</label>
+      <label><input type="checkbox" value="100 grs de jamón de pavo/lomo"> 100 grs de jamón de pavo/lomo</label>
+      <label><input type="checkbox" value="100 grs de queso de puerco"> 100 grs de queso de puerco</label>
+      <label><input type="checkbox" value="Tortillas de harina"> Tortillas de harina</label>
+      <label><input type="checkbox" value="Tostadas de maíz"> Tostadas de maíz</label>
+      <label><input type="checkbox" value="Totopos de maíz"> Totopos de maíz</label>
+      <label><input type="checkbox" value="Bolsa de 1 kg de maíz pozolero"> Bolsa de 1 kg de maíz pozolero</label>
+      <label><input type="checkbox" value="Condimento para carnes"> Condimento para carnes</label>
+
+      <button onclick="confirmarPedidoFinal()">Confirmar Pedido Final</button>
+
+      <div class="contacto-final" id="contactoFinal" style="display: none;"></div>
+    </div>
+
+    <div class="exito" id="mensajeExito">
+      <div class="exito-mensaje">
+        <h2>¡Su pedido ha sido recibido con éxito!</h2>
+        <p>Le contactaremos pronto para confirmar los detalles y la entrega.</p>
+        <button onclick="resetearFormulario()">Hacer otro pedido</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // El JavaScript para agregar productos dinámicos, manejar formularios, mostrar modales, generar PDF y más se incluirá en el siguiente bloque por tamaño.
+
+    // ¿Deseas que lo continúe desde aquí con toda la funcionalidad en JS?
+  </script>
+</body>
+</html>
